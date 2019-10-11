@@ -18,14 +18,14 @@
 
 package com.cybersource.ws.client;
 
-import org.bouncycastle.util.encoders.Base64;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.Charset;
+
+import org.apache.ws.security.util.Base64;
 
 /**
  * Helps in creating the Proxy and adding Proxy credentials to HttpURLConnection.

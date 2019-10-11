@@ -51,6 +51,7 @@ public class MerchantConfig {
     private String namespaceURI;
     private String password;
     private boolean enableJdkCert;
+    private String jdkCertContent;
     private boolean enableCacert;
     private boolean enableLog;
     private boolean logSignedData;
@@ -272,6 +273,7 @@ public class MerchantConfig {
         proxyUser = getProperty(merchantID, "proxyUser");
         proxyPassword = getProperty(merchantID, "proxyPassword");
         enableJdkCert = getBooleanProperty(merchantID, "enableJdkCert", false);
+        jdkCertContent = getProperty(merchantID, "jdkCertContent");
         enableCacert=getBooleanProperty(merchantID, "enableCacert", false);
         cacertPassword=getProperty(merchantID,"cacertPassword","changeit");
         customHttpClassEnabled=getBooleanProperty(merchantID,"customHttpClassEnabled",false);
@@ -594,5 +596,8 @@ public class MerchantConfig {
     public String getCacertPassword(){
         return cacertPassword;
     }
-	
+
+    public String getJdkCertContent() {
+        return jdkCertContent;
+    }
 }

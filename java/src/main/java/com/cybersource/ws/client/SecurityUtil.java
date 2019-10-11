@@ -1,5 +1,7 @@
 package com.cybersource.ws.client;
 
+//import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ws.security.WSConstants;
 import org.apache.ws.security.WSEncryptionPart;
 import org.apache.ws.security.WSSecurityException;
@@ -7,26 +9,41 @@ import org.apache.ws.security.components.crypto.CredentialException;
 import org.apache.ws.security.message.WSSecEncrypt;
 import org.apache.ws.security.message.WSSecHeader;
 import org.apache.ws.security.message.WSSecSignature;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.w3c.dom.Document;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.Provider;
 import java.security.Security;
 import java.security.UnrecoverableEntryException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.xml.bind.DatatypeConverter;
+import javax.xml.transform.sax.SAXSource;
+
+import sun.misc.BASE64Decoder;
+import sun.misc.IOUtils;
 
 
 public class SecurityUtil {
@@ -44,12 +61,9 @@ public class SecurityUtil {
     private static final String SIGNATURE_ALGORITHM = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
     // By default digest algorithm is set to "http://www.w3.org/2000/09/xmldsig#sha1"
     private static final String DIGEST_ALGORITHM = "http://www.w3.org/2001/04/xmlenc#sha256";
-    
-    private static BouncyCastleProvider bcProvider = new BouncyCastleProvider();
-    
+
     // This is loaded by WSS4J but since we use it lets make sure its here
     static {
-        Security.addProvider(bcProvider);
         try {
             initKeystore();
         } catch (Exception e) {
@@ -58,7 +72,7 @@ public class SecurityUtil {
     }
     
     private static void initKeystore() throws KeyStoreException, CredentialException, IOException, NoSuchAlgorithmException, CertificateException{
-        KeyStore keyStore = KeyStore.getInstance("jks");
+		KeyStore keyStore = KeyStore.getInstance("jks");
         keyStore.load(null, null);
         localKeyStoreHandler = new MessageHandlerKeyStore();
         localKeyStoreHandler.setKeyStore(keyStore);
@@ -81,21 +95,21 @@ public class SecurityUtil {
      * @throws ConfigException
      */
     public static void loadMerchantP12File(MerchantConfig merchantConfig, Logger logger) throws SignException, SignEncryptException, ConfigException {
-               
         Identity identity=identities.get(merchantConfig.getMerchantID());
-        if(!merchantConfig.isCertificateCacheEnabled() || identity == null || !(identity.isValid(merchantConfig.getKeyFile()))){
+
+        if(!merchantConfig.isCertificateCacheEnabled() || identity == null){
             try {
                 if (localKeyStoreHandler == null)
                     initKeystore();
             } catch (Exception e) {
-                logger.log(Logger.LT_EXCEPTION,
+				logger.log(Logger.LT_EXCEPTION,
                            "SecurityUtil, cannot instantiate class with keystore error. "
                            + e.getMessage());
                 throw new SignException(e.getMessage());
             }
             if(merchantConfig.isJdkCertEnabled()){
                 logger.log(Logger.LT_INFO," Loading the certificate from JDK Cert");
-                SecurityUtil.readJdkCert(merchantConfig,logger);
+				SecurityUtil.readJdkCert(merchantConfig,logger);
             }
 			else if(merchantConfig.isCacertEnabled()){
                 logger.log(Logger.LT_INFO," Loading the certificate from JRE security cacert file");
@@ -119,15 +133,14 @@ public class SecurityUtil {
     private static void readAndStoreCertificateAndPrivateKey(MerchantConfig merchantConfig, Logger logger) throws SignException, SignEncryptException {
         KeyStore merchantKeyStore;
         try {
-            merchantKeyStore = KeyStore.getInstance(KEY_FILE_TYPE,
-                                                    bcProvider);
+            merchantKeyStore = KeyStore.getInstance(KEY_FILE_TYPE);
         } catch (KeyStoreException e) {
             logger.log(Logger.LT_EXCEPTION, "Exception while instantiating KeyStore");
-            throw new SignException(e);
+			throw new SignException(e);
         }
-        
-        try {
-            merchantKeyStore.load(new FileInputStream(merchantConfig.getKeyFile()), merchantConfig.getKeyPassword().toCharArray());
+
+		try {
+			merchantKeyStore.load(new FileInputStream(merchantConfig.getKeyFile()), merchantConfig.getKeyPassword().toCharArray());
         } catch (IOException e) {
             logger.log(Logger.LT_EXCEPTION, "Exception while loading KeyStore, '" + merchantConfig.getKeyFilename() + "'");
             throw new SignException(e);
@@ -261,13 +274,18 @@ public class SecurityUtil {
             throw new SignException(e.getMessage());
         }
     }
-    
-    
+
 	public static void readJdkCert(MerchantConfig merchantConfig, Logger logger)
 			throws SignEncryptException, SignException, ConfigException {
 		KeyStore keystore = null;
 		try {
-			FileInputStream is = new FileInputStream(merchantConfig.getKeyFile());
+			InputStream is;
+			if (StringUtils.isNotEmpty(merchantConfig.getJdkCertContent())) {
+				byte[] decoded = DatatypeConverter.parseBase64Binary(merchantConfig.getJdkCertContent());
+				is = new ByteArrayInputStream(decoded);
+			} else {
+				is = new FileInputStream(merchantConfig.getKeyFile());
+			}
 			keystore = KeyStore.getInstance(KeyStore.getDefaultType());
 			keystore.load(is, merchantConfig.getKeyPassword().toCharArray());
 		} catch (Exception e) {

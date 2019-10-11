@@ -106,15 +106,7 @@ public class Identity {
         if(this.logger == null){
         	this.logger=logger;
         }
-        try {
-			this.lastModifiedDate=merchantConfig.getKeyFile().lastModified();
-		} catch (ConfigException e) {
-			
-			logger.log(Logger.LT_EXCEPTION,
-                    "Identity object ,cannot instantiate with key file lastModifiedDate. "
-                    + e.getMessage());
-         throw new SignException("Exception While initializing the merchant identity constructor with keyfile last modified date"+e.getMessage());
-		}
+
         setUpMerchant();
     }
     

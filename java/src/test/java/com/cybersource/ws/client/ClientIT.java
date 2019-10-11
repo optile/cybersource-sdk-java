@@ -19,6 +19,7 @@
 package com.cybersource.ws.client;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 import java.io.InputStream;
@@ -35,47 +36,91 @@ import java.util.Properties;
 public class ClientIT extends BaseTest {
 
 
-   // Test case takes the Transaction Data and Merchant Properties details are given as input.
-    @Test
-    public void testRunTransaction() throws Exception {
-    	
-    	// Transaction Data
-        HashMap<String, String> requestMap = new HashMap<String, String>();
-        requestMap.put("ccAuthService_run", "true");
-        requestMap.put("merchantReferenceCode", "your_reference_code");
-        requestMap.put("billTo_firstName", "John");
-        requestMap.put("billTo_lastName", "Doe");
-        requestMap.put("billTo_street1", "1295 Charleston Road");
-        requestMap.put("billTo_city", "Mountain View");
-        requestMap.put("billTo_state", "CA");
-        requestMap.put("billTo_postalCode", "94043");
-        requestMap.put("billTo_country", "US");
-        requestMap.put("billTo_email", "nobody@cybersource.com");
-        requestMap.put("billTo_ipAddress", "10.7.7.7");
-        requestMap.put("billTo_phoneNumber", "650-965-6000");
-        requestMap.put("shipTo_firstName", "Jane");
-        requestMap.put("shipTo_lastName", "Doe");
-        requestMap.put("shipTo_street1", "100 Elm Street");
-        requestMap.put("shipTo_city", "San Mateo");
-        requestMap.put("shipTo_state", "CA");
-        requestMap.put("shipTo_postalCode", "94401");
-        requestMap.put("shipTo_country", "US");
-        requestMap.put("card_accountNumber", "4111111111111111");
-        requestMap.put("card_expirationMonth", "12");
-        requestMap.put("card_expirationYear", "2020");
-        requestMap.put("purchaseTotals_currency", "USD");
-        requestMap.put("item_0_unitPrice", "12.34");
-        requestMap.put("item_1_unitPrice", "56.78");
-        //requestMap.put("merchantID", "your_merchant_id");
+	// Test case takes the Transaction Data and Merchant Properties details are given as input.
+	@Test
+	public void testRunTransaction() throws Exception {
 
-	    //Loading the properties file from src/test/resources
-        Properties merchantProperties = new Properties();
-        InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("test_cybs.properties");
+		// Transaction Data
+		HashMap<String, String> requestMap = new HashMap<String, String>();
+		requestMap.put("ccAuthService_run", "true");
+		requestMap.put("merchantReferenceCode", "your_reference_code");
+		requestMap.put("billTo_firstName", "John");
+		requestMap.put("billTo_lastName", "Doe");
+		requestMap.put("billTo_street1", "1295 Charleston Road");
+		requestMap.put("billTo_city", "Mountain View");
+		requestMap.put("billTo_state", "CA");
+		requestMap.put("billTo_postalCode", "94043");
+		requestMap.put("billTo_country", "US");
+		requestMap.put("billTo_email", "nobody@cybersource.com");
+		requestMap.put("billTo_ipAddress", "10.7.7.7");
+		requestMap.put("billTo_phoneNumber", "650-965-6000");
+		requestMap.put("shipTo_firstName", "Jane");
+		requestMap.put("shipTo_lastName", "Doe");
+		requestMap.put("shipTo_street1", "100 Elm Street");
+		requestMap.put("shipTo_city", "San Mateo");
+		requestMap.put("shipTo_state", "CA");
+		requestMap.put("shipTo_postalCode", "94401");
+		requestMap.put("shipTo_country", "US");
+		requestMap.put("card_accountNumber", "4111111111111111");
+		requestMap.put("card_expirationMonth", "12");
+		requestMap.put("card_expirationYear", "2020");
+		requestMap.put("purchaseTotals_currency", "USD");
+		requestMap.put("item_0_unitPrice", "12.34");
+		requestMap.put("item_1_unitPrice", "56.78");
+		//requestMap.put("merchantID", "your_merchant_id");
+
+		//Loading the properties file from src/test/resources
+		Properties merchantProperties = new Properties();
+		InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("test_cybs.properties");
 		if (in == null) {
 			throw new RuntimeException("Unable to load test_cybs.properties file");
 		}
 		merchantProperties.load(in);
 		Map<String, String> replyMap = Client.runTransaction(requestMap, merchantProperties);
-        assertEquals("100", replyMap.get("reasonCode"));
-    }
+		assertEquals("100", replyMap.get("reasonCode"));
+	}
+
+	@Test
+	public void testRunWithJdkCertContentAsParameterTransaction() throws Exception {
+
+		// Transaction Data
+		HashMap<String, String> requestMap = new HashMap<String, String>();
+		requestMap.put("ccAuthService_run", "true");
+		requestMap.put("merchantReferenceCode", "your_reference_code");
+		requestMap.put("billTo_firstName", "John");
+		requestMap.put("billTo_lastName", "Doe");
+		requestMap.put("billTo_street1", "1295 Charleston Road");
+		requestMap.put("billTo_city", "Mountain View");
+		requestMap.put("billTo_state", "CA");
+		requestMap.put("billTo_postalCode", "94043");
+		requestMap.put("billTo_country", "US");
+		requestMap.put("billTo_email", "nobody@cybersource.com");
+		requestMap.put("billTo_ipAddress", "10.7.7.7");
+		requestMap.put("billTo_phoneNumber", "650-965-6000");
+		requestMap.put("shipTo_firstName", "Jane");
+		requestMap.put("shipTo_lastName", "Doe");
+		requestMap.put("shipTo_street1", "100 Elm Street");
+		requestMap.put("shipTo_city", "San Mateo");
+		requestMap.put("shipTo_state", "CA");
+		requestMap.put("shipTo_postalCode", "94401");
+		requestMap.put("shipTo_country", "US");
+		requestMap.put("card_accountNumber", "4111111111111111");
+		requestMap.put("card_expirationMonth", "12");
+		requestMap.put("card_expirationYear", "2020");
+		requestMap.put("purchaseTotals_currency", "USD");
+		requestMap.put("item_0_unitPrice", "12.34");
+		requestMap.put("item_1_unitPrice", "56.78");
+		//requestMap.put("merchantID", "your_merchant_id");
+
+		//Loading the properties file from src/test/resources
+		Properties merchantProperties = new Properties();
+		InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("test_cybs.properties");
+		if (in == null) {
+			throw new RuntimeException("Unable to load test_cybs.properties file");
+		}
+		merchantProperties.load(in);
+		merchantProperties.put("jdkCertContent", FileUtils.readFileToString("/cert/optiletestmerchantbase64"));
+		Map<String, String> replyMap = Client.runTransaction(requestMap, merchantProperties);
+		assertEquals("100", replyMap.get("reasonCode"));
+	}
 }

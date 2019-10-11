@@ -1,19 +1,17 @@
-#########
-## Java
-#########
+**.project
+**.iml
+**.settings
+**.classpath
+**.springBeans
+**.DS_Store
+**target/
+**.idea/
+**test-output/
+**docs/
+**reports/
+**surefire/
+**.log
+**testng-failed.xml
 
-*.class
-
-
-#########
-## InteliJ
-#########
-
-.idea/
-*.iml
-
-#########
-## Maven
-#########
-
-target/
+/bin
+src/test/resources/testng-my.xml
